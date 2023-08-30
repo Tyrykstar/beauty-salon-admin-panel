@@ -1,22 +1,34 @@
 import { useEffect, useState } from "react";
 import "./appointmentItem.scss";
-import {
-	ActiveAppointment,
-	IAppointment,
-} from "../../shared/interfaces/appointment.interface";
+import { IAppointment } from "../../shared/interfaces/appointment.interface";
 import dayjs from "dayjs";
 
-function AppointmentItem(data: ActiveAppointment | IAppointment) {
+type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+
+type AppointmentProps = Optional<IAppointment, "canceled"> & {
+	openModal: (state: boolean) => void;
+	selectId: () => void;
+};
+
+function AppointmentItem({
+	id,
+	name,
+	date,
+	phone,
+	service,
+	canceled,
+	openModal,
+	selectId,
+}: AppointmentProps) {
 	const [timeLeft, changeTimeLeft] = useState<string | null>(null);
-	const isCanceled: boolean = "canceled" in data;
 
 	useEffect(() => {
 		const intervalId = setInterval(() => {
 			console.log("interval");
 
 			changeTimeLeft(
-				`${dayjs(data.date).diff(undefined, "h")}:${
-					dayjs(data.date).diff(undefined, "m") % 60
+				`${dayjs(date).diff(undefined, "h")}:${
+					dayjs(date).diff(undefined, "m") % 60
 				}`
 			);
 		}, 60000);
@@ -24,9 +36,9 @@ function AppointmentItem(data: ActiveAppointment | IAppointment) {
 		return () => {
 			clearInterval(intervalId);
 		};
-	}, [data.date]);
+	}, [date]);
 
-	const formattedDate = dayjs(data.date).format("DD/MM/YYYY HH:mm");
+	const formattedDate = dayjs(date).format("DD/MM/YYYY HH:mm");
 
 	console.log(timeLeft);
 
@@ -34,20 +46,32 @@ function AppointmentItem(data: ActiveAppointment | IAppointment) {
 		<div className="appointment">
 			<div className="appointment__info">
 				<span className="appointment__date">Date: {formattedDate}</span>
-				<span className="appointment__name">Name: {data.name}</span>
-				<span className="appointment__service">
-					Service: {data.service}
-				</span>
-				<span className="appointment__phone">Phone: {data.phone}</span>
+				<span className="appointment__name">Name: {name}</span>
+				<span className="appointment__service">Service: {service}</span>
+				<span className="appointment__phone">Phone: {phone}</span>
 			</div>
-			<div className="appointment__time">
-				<span>Time left:</span>
-				<span className="appointment__timer">{timeLeft}</span>
-			</div>
-			{isCanceled ? (
-				<button className="appointment__cancel">Cancel</button>
+
+			{!canceled ? (
+				<>
+					<div className="appointment__time">
+						<span>Time left:</span>
+						<span className="appointment__timer">{timeLeft}</span>
+					</div>
+					<button
+						className="appointment__cancel"
+						onClick={() => {
+							openModal(true);
+							selectId();
+						}}
+					>
+						Cancel
+					</button>
+				</>
 			) : null}
-			{/* <div className="appointment__canceled">Canceled</div> */}
+
+			{canceled ? (
+				<div className="appointment__canceled">Canceled</div>
+			) : null}
 		</div>
 	);
 }
