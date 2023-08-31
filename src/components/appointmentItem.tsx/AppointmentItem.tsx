@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import "./appointmentItem.scss";
 import { IAppointment } from "../../shared/interfaces/appointment.interface";
 import dayjs from "dayjs";
@@ -6,74 +6,76 @@ import dayjs from "dayjs";
 type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 
 type AppointmentProps = Optional<IAppointment, "canceled"> & {
-	openModal: (state: boolean) => void;
-	selectId: () => void;
+	openModal: (state: number) => void;
 };
 
-function AppointmentItem({
-	id,
-	name,
-	date,
-	phone,
-	service,
-	canceled,
-	openModal,
-	selectId,
-}: AppointmentProps) {
-	const [timeLeft, changeTimeLeft] = useState<string | null>(null);
+const AppointmentItem = memo(
+	({
+		id,
+		name,
+		date,
+		phone,
+		service,
+		canceled,
+		openModal,
+	}: AppointmentProps) => {
+		const [timeLeft, changeTimeLeft] = useState<string | null>(null);
 
-	useEffect(() => {
-		const intervalId = setInterval(() => {
-			console.log("interval");
+		useEffect(() => {
+			const intervalId = setInterval(() => {
+				changeTimeLeft(
+					`${dayjs(date).diff(undefined, "h")}:${
+						dayjs(date).diff(undefined, "m") % 60
+					}`
+				);
+			}, 60000);
 
-			changeTimeLeft(
-				`${dayjs(date).diff(undefined, "h")}:${
-					dayjs(date).diff(undefined, "m") % 60
-				}`
-			);
-		}, 60000);
+			console.log("render AppointmentItem useEffect");
+			return () => {
+				clearInterval(intervalId);
+			};
+		}, [date]);
 
-		return () => {
-			clearInterval(intervalId);
-		};
-	}, [date]);
+		const formattedDate = dayjs(date).format("DD/MM/YYYY HH:mm");
 
-	const formattedDate = dayjs(date).format("DD/MM/YYYY HH:mm");
+		console.log("render AppointmentItem");
 
-	console.log(timeLeft);
+		return (
+			<div className="appointment">
+				<div className="appointment__info">
+					<span className="appointment__date">
+						Date: {formattedDate}
+					</span>
+					<span className="appointment__name">Name: {name}</span>
+					<span className="appointment__service">
+						Service: {service}
+					</span>
+					<span className="appointment__phone">Phone: {phone}</span>
+				</div>
 
-	return (
-		<div className="appointment">
-			<div className="appointment__info">
-				<span className="appointment__date">Date: {formattedDate}</span>
-				<span className="appointment__name">Name: {name}</span>
-				<span className="appointment__service">Service: {service}</span>
-				<span className="appointment__phone">Phone: {phone}</span>
+				{!canceled ? (
+					<>
+						<div className="appointment__time">
+							<span>Time left:</span>
+							<span className="appointment__timer">
+								{timeLeft}
+							</span>
+						</div>
+						<button
+							className="appointment__cancel"
+							onClick={() => openModal(id)}
+						>
+							Cancel
+						</button>
+					</>
+				) : null}
+
+				{canceled ? (
+					<div className="appointment__canceled">Canceled</div>
+				) : null}
 			</div>
-
-			{!canceled ? (
-				<>
-					<div className="appointment__time">
-						<span>Time left:</span>
-						<span className="appointment__timer">{timeLeft}</span>
-					</div>
-					<button
-						className="appointment__cancel"
-						onClick={() => {
-							openModal(true);
-							selectId();
-						}}
-					>
-						Cancel
-					</button>
-				</>
-			) : null}
-
-			{canceled ? (
-				<div className="appointment__canceled">Canceled</div>
-			) : null}
-		</div>
-	);
-}
+		);
+	}
+);
 
 export default AppointmentItem;

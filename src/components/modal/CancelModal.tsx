@@ -1,4 +1,5 @@
 import "./modal.scss";
+import { useEffect, useCallback } from "react";
 
 import Portal from "../portal/Portal";
 
@@ -8,6 +9,29 @@ interface IModalProps {
 }
 
 function CancelModal({ handleClose, selectId }: IModalProps) {
+	const handleEscapeCloseModal = useCallback(
+		(e: KeyboardEvent) => {
+			if (e.key === "Escape") {
+				handleClose(false);
+			}
+		},
+		[handleClose]
+	);
+
+	useEffect(() => {
+		document.body.addEventListener("keydown", handleEscapeCloseModal);
+
+		console.log("render CancelModal useEffect");
+		return () => {
+			document.body.removeEventListener(
+				"keydown",
+				handleEscapeCloseModal
+			);
+		};
+	}, [handleEscapeCloseModal]);
+
+	console.log("render CancelModal");
+
 	return (
 		<Portal>
 			<div className="modal">
