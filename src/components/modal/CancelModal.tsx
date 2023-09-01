@@ -1,7 +1,8 @@
 import "./modal.scss";
-import { useEffect, useCallback } from "react";
-
+import { useEffect, useCallback, useContext, useState } from "react";
 import Portal from "../portal/Portal";
+import { AppointmentContext } from "../../context/appointments/AppointmentsContext";
+import useAppointmentService from "../../services/AppointmentService";
 
 interface IModalProps {
 	handleClose: (state: boolean) => void;
@@ -9,19 +10,28 @@ interface IModalProps {
 }
 
 function CancelModal({ handleClose, selectId }: IModalProps) {
-	const handleEscapeCloseModal = useCallback(
-		(e: KeyboardEvent) => {
-			if (e.key === "Escape") {
-				handleClose(false);
-			}
-		},
-		[handleClose]
-	);
+	const [disabledBtn, setDisabledBtn] = useState<boolean>(false);
+	const { getActiveAppointments } = useContext(AppointmentContext);
+
+	const { cancelOneAppointment } = useAppointmentService();
+
+	const closeModal = () => {
+		if (disabledBtn) {
+			console.log("disabledBtn => ", disabledBtn);
+			getActiveAppointments();
+		}
+		handleClose(false);
+	};
+
+	const handleEscapeCloseModal = (e: KeyboardEvent) => {
+		if (e.key === "Escape") {
+			closeModal();
+		}
+	};
 
 	useEffect(() => {
 		document.body.addEventListener("keydown", handleEscapeCloseModal);
 
-		console.log("render CancelModal useEffect");
 		return () => {
 			document.body.removeEventListener(
 				"keydown",
@@ -30,7 +40,17 @@ function CancelModal({ handleClose, selectId }: IModalProps) {
 		};
 	}, [handleEscapeCloseModal]);
 
-	console.log("render CancelModal");
+	const handleCancelAppointment = (id: number) => {
+		console.log("cancel by id", id);
+		cancelOneAppointment(id)
+			.then(() => {
+				setDisabledBtn(true);
+				console.log("cancelOneAppointment");
+			})
+			.catch((err) => {
+				console.log(err);
+			});
+	};
 
 	return (
 		<Portal>
@@ -41,10 +61,16 @@ function CancelModal({ handleClose, selectId }: IModalProps) {
 						{selectId}
 					</span>
 					<div className="modal__btns">
-						<button className="modal__ok">Ok</button>
+						<button
+							className="modal__ok"
+							disabled={disabledBtn}
+							onClick={() => handleCancelAppointment(selectId)}
+						>
+							Ok
+						</button>
 						<button
 							className="modal__close"
-							onClick={() => handleClose(false)}
+							onClick={() => closeModal()}
 						>
 							Close
 						</button>

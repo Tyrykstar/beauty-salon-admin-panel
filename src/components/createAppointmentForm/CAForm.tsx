@@ -1,8 +1,57 @@
 import "./caform.scss";
+import useAppointmentService from "../../services/AppointmentService";
+import { FormEvent, useState, ChangeEvent, useContext } from "react";
+import { AppointmentContext } from "../../context/appointments/AppointmentsContext";
+import { IAppointment } from "../../shared/interfaces/appointment.interface";
+import dayjs from "dayjs";
 
 function CAForm() {
+	const { createNewAppointment } = useAppointmentService();
+	const [formData, setFormData] = useState<IAppointment>({
+		id: 1,
+		name: "",
+		phone: "",
+		service: "",
+		date: "",
+		canceled: false,
+	});
+	const [creationStatus, setCreationStatus] = useState<boolean>(false);
+	const { getActiveAppointments } = useContext(AppointmentContext);
+
+	const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		setCreationStatus(true);
+
+		createNewAppointment(formData)
+			.then(() => {
+				setCreationStatus(false);
+				setFormData({
+					id: 1,
+					name: "",
+					phone: "",
+					service: "",
+					date: "",
+					canceled: false,
+				});
+				getActiveAppointments();
+			})
+			.catch((err) => {
+				console.log(err);
+				alert("Error while creating new apponitment");
+			});
+	};
+
+	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+		const { name, value } = e.target;
+
+		setFormData((prevData) => ({
+			...prevData,
+			[name]: value,
+		}));
+	};
+
 	return (
-		<form className="caform">
+		<form className="caform" onSubmit={handleSubmit}>
 			<div className="caform__title">Create new appointment</div>
 			<label htmlFor="name">
 				Name<span>*</span>
@@ -12,6 +61,8 @@ function CAForm() {
 				name="name"
 				id="name"
 				placeholder="User name"
+				value={formData.name}
+				onChange={handleChange}
 				required
 			/>
 
@@ -23,6 +74,8 @@ function CAForm() {
 				name="service"
 				id="service"
 				placeholder="Service name"
+				value={formData.service}
+				onChange={handleChange}
 				required
 			/>
 
@@ -36,6 +89,8 @@ function CAForm() {
 				placeholder="+1 890 335 372"
 				pattern="^\++[0-9]{1} [0-9]{3} [0-9]{3} [0-9]{3}"
 				title="Format should be +1 804 944 567"
+				value={formData.phone}
+				onChange={handleChange}
 				required
 			/>
 
@@ -49,9 +104,11 @@ function CAForm() {
 				placeholder="DD/MM/YYYY HH:mm"
 				pattern="^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$"
 				title="Format should be DD/MM/YYYY HH:mm"
+				value={formData.date}
+				onChange={handleChange}
 				required
 			/>
-			<button>Create</button>
+			<button disabled={creationStatus}>Create</button>
 		</form>
 	);
 }
