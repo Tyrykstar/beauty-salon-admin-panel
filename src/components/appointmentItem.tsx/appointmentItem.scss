@@ -6,17 +6,18 @@
 	background-color: #fff;
 	box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.25);
 	display: grid;
-	grid-template-columns: 240px auto;
+	grid-template-columns: 250px auto;
 	column-gap: 110px;
 	&__timer {
-		display: block;
-		font-size: 24px;
+		display: inline;
+		font-size: 15px;
 		line-height: 33px;
 		margin-top: 15px;
 		color: rgba(0, 0, 0, 0.7);
 	}
 	span:not(.appointment__timer) {
-		display: block;
+		display: inline;
+		margin-right: 10px;
 		font-weight: 600;
 		font-size: 15px;
 		line-height: 20px;
