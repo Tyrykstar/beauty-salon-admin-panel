@@ -3,7 +3,6 @@ import useAppointmentService from "../../services/AppointmentService";
 import { FormEvent, useState, ChangeEvent, useContext } from "react";
 import { AppointmentContext } from "../../context/appointments/AppointmentsContext";
 import { IAppointment } from "../../shared/interfaces/appointment.interface";
-import dayjs from "dayjs";
 
 function CAForm() {
 	const { createNewAppointment } = useAppointmentService();

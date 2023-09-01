@@ -4,7 +4,7 @@
 /node_modules
 /.pnp
 .pnp.js
-db.json
+/src/assets/db.json
 
 # testing
 /coverage
